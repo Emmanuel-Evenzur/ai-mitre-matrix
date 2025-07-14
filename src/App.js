@@ -2,18 +2,16 @@ import { useState, useEffect } from "react";
 
 export default function AIMitreMatrix() {
   const [atlasMatrix, setAtlasMatrix] = useState([]);
-  const [reports, setReports] = useState([]);            // mapped reports shown in UI
-  const [pending, setPending] = useState([]);            // newly uploaded, not yet mapped
+  const [reports, setReports] = useState([]);
+  const [pending, setPending] = useState([]);
   const [selectedCell, setSelectedCell] = useState(null);
 
-  // Fetch live MITRE ATLAS tactics/techniques once
   useEffect(() => {
     fetch("https://atlas.mitre.org/api/matrix")
       .then((r) => r.json())
       .then((data) => setAtlasMatrix(data));
   }, []);
 
-  // 1) Upload JSON – keep it in pending until user clicks "Map to MITRE AI"
   const handleUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -23,7 +21,7 @@ export default function AIMitreMatrix() {
         const parsed = JSON.parse(event.target.result);
         const newPending = Array.isArray(parsed) ? parsed : [parsed];
         setPending(newPending);
-        alert(`Loaded ${newPending.length} report(s). Click "Map to MITRE AI" to add them to the matrix.`);
+        alert(`Loaded ${newPending.length} report(s). Click \"Map to MITRE AI\" to add them to the matrix.`);
       } catch (err) {
         alert("Invalid JSON format – please upload a valid report file.");
       }
@@ -31,7 +29,6 @@ export default function AIMitreMatrix() {
     reader.readAsText(file);
   };
 
-  // 2) Merge pending into reports using technique_id from external_references
   const mapPending = () => {
     if (pending.length === 0) {
       alert("No uploaded reports to map.");
@@ -43,7 +40,8 @@ export default function AIMitreMatrix() {
 
       for (const tactic of atlasMatrix) {
         for (const tech of tactic.techniques) {
-          const match = tech.external_references?.find(ref => ref.external_id === report.technique_id);
+          if (!tech.external_references) continue;
+          const match = tech.external_references.find(ref => ref.external_id === report.technique_id);
           if (match) {
             return {
               ...report,
@@ -53,7 +51,7 @@ export default function AIMitreMatrix() {
           }
         }
       }
-      return null; // If not found, ignore
+      return null;
     }).filter(Boolean);
 
     if (resolved.length === 0) {
@@ -64,7 +62,6 @@ export default function AIMitreMatrix() {
     setPending([]);
   };
 
-  // 3) Open cell modal / panel
   const openReports = (tactic, technique) => {
     const matched = reports.filter(
       (r) => r.tactic === tactic && r.technique === technique
@@ -76,7 +73,6 @@ export default function AIMitreMatrix() {
     <div className="p-6 space-y-6">
       <h1 className="text-3xl font-bold">AI MITRE Matrix (Live)</h1>
 
-      {/* Upload + map controls */}
       <div className="flex items-center space-x-4">
         <div>
           <label className="block font-semibold mb-1">Upload Red Team Report (.json):</label>
@@ -94,7 +90,6 @@ export default function AIMitreMatrix() {
         )}
       </div>
 
-      {/* Matrix grid */}
       <div className="grid grid-cols-4 gap-4">
         {atlasMatrix.map((tactic) => (
           <div key={tactic.tactic} className="border rounded-xl p-4 shadow">
@@ -112,7 +107,6 @@ export default function AIMitreMatrix() {
         ))}
       </div>
 
-      {/* Report panel */}
       {selectedCell && (
         <div className="mt-6 p-4 border-t">
           <h3 className="text-xl font-semibold mb-2">
