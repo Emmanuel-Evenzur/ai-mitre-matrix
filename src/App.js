@@ -31,13 +31,34 @@ export default function AIMitreMatrix() {
     reader.readAsText(file);
   };
 
-  // 2) Merge pending into reports when user is ready
+  // 2) Merge pending into reports using technique_id to resolve tactic/technique names
   const mapPending = () => {
     if (pending.length === 0) {
       alert("No uploaded reports to map.");
       return;
     }
-    setReports((prev) => [...prev, ...pending]);
+
+    const resolved = pending.map((report) => {
+      if (!report.technique_id) return null;
+
+      for (const tactic of atlasMatrix) {
+        const match = tactic.techniques.find((tech) => tech.id === report.technique_id);
+        if (match) {
+          return {
+            ...report,
+            tactic: tactic.tactic,
+            technique: match.name
+          };
+        }
+      }
+      return null; // If not found, ignore
+    }).filter(Boolean);
+
+    if (resolved.length === 0) {
+      alert("None of the uploaded reports matched known technique IDs.");
+    } else {
+      setReports((prev) => [...prev, ...resolved]);
+    }
     setPending([]);
   };
 
