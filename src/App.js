@@ -15,9 +15,45 @@ const reports = [
       "Memory segmentation",
       "Input sanitization"
     ],
-    report_link: "https://yourdomain.com/redteam/123",
+    report_link: "https://example.com/redteam/context-leakage",
     status: "Simulated",
     tags: ["LLM", "Data Leakage", "Prompt Injection"]
+  },
+  {
+    title: "Model Extraction via Query Replay",
+    tactic: "Reconnaissance",
+    technique: "Model Architecture Inference",
+    description:
+      "A black-box API was queried repeatedly with carefully chosen inputs to reconstruct the model behavior and extract training data characteristics.",
+    model_type: "Proprietary Classifier",
+    attack_vector: "External inference API",
+    impact: "IP loss; reconstructed internal classifier",
+    mitigations: [
+      "Rate limiting",
+      "Query pattern anomaly detection",
+      "Output perturbation"
+    ],
+    report_link: "https://example.com/redteam/model-extraction",
+    status: "Confirmed",
+    tags: ["Model Extraction", "Recon", "API"]
+  },
+  {
+    title: "Poisoned RAG Dataset Injection",
+    tactic: "Poisoning",
+    technique: "Training Data Poisoning",
+    description:
+      "An attacker added targeted false facts to a public wiki dataset used by the RAG pipeline. These poisoned facts were later cited verbatim in production responses.",
+    model_type: "RAG (Retrieval Augmented Generation)",
+    attack_vector: "Upstream data source",
+    impact: "Misinformation surfaced to users; legal risk",
+    mitigations: [
+      "Trust filters on incoming data",
+      "Hash/version tracking of training sets",
+      "Feedback loop validation"
+    ],
+    report_link: "https://example.com/redteam/rag-poisoning",
+    status: "Simulated",
+    tags: ["RAG", "Poisoning", "Open Source"]
   }
 ];
 
