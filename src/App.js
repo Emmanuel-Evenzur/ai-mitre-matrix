@@ -23,7 +23,7 @@ export default function AIMitreMatrix() {
         const parsed = JSON.parse(event.target.result);
         const newPending = Array.isArray(parsed) ? parsed : [parsed];
         setPending(newPending);
-        alert(`Loaded ${newPending.length} report(s). Click \"Map to MITRE AI\" to add them to the matrix.`);
+        alert(`Loaded ${newPending.length} report(s). Click "Map to MITRE AI" to add them to the matrix.`);
       } catch (err) {
         alert("Invalid JSON format – please upload a valid report file.");
       }
@@ -31,7 +31,7 @@ export default function AIMitreMatrix() {
     reader.readAsText(file);
   };
 
-  // 2) Merge pending into reports using technique_id to resolve tactic/technique names
+  // 2) Merge pending into reports using technique_id from external_references
   const mapPending = () => {
     if (pending.length === 0) {
       alert("No uploaded reports to map.");
@@ -42,13 +42,15 @@ export default function AIMitreMatrix() {
       if (!report.technique_id) return null;
 
       for (const tactic of atlasMatrix) {
-        const match = tactic.techniques.find((tech) => tech.id === report.technique_id);
-        if (match) {
-          return {
-            ...report,
-            tactic: tactic.tactic,
-            technique: match.name
-          };
+        for (const tech of tactic.techniques) {
+          const match = tech.external_references?.find(ref => ref.external_id === report.technique_id);
+          if (match) {
+            return {
+              ...report,
+              tactic: tactic.tactic,
+              technique: tech.name
+            };
+          }
         }
       }
       return null; // If not found, ignore
