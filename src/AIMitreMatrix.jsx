@@ -1,261 +1,164 @@
 import { useState, useEffect } from "react";
 
-/* ---------- DEMO MATRIX (always renders) ---------- */
+/* ---------------- 1. DEMO MATRIX (static fallback) ---------------- */
 const demoMatrix = [
-  {
-    tactic: "Reconnaissance",
-    techniques: [
-      { name: "Search Open Technical Databases" },
-      { name: "Search Open AI Vulnerability Analysis" },
-      { name: "Search Victim-Owned Websites" },
-      { name: "Search Application Repositories" },
-      { name: "Active Scanning" },
-      { name: "Gather RAG-Indexed Targets" }
-    ]
-  },
-  {
-    tactic: "Resource Development",
-    techniques: [
-      { name: "Acquire Public AI Artifacts" },
-      { name: "Obtain Capabilities" },
-      { name: "Develop Capabilities" },
-      { name: "Acquire Infrastructure" },
-      { name: "Publish Poisoned Datasets" },
-      { name: "Poison Training Data" },
-      { name: "Establish Accounts" },
-      { name: "Publish Poisoned Models" },
-      { name: "Publish Hallucinated Entities" },
-      { name: "LLM Prompt Crafting" },
-      { name: "Retrieval Content Crafting" },
-      { name: "Stage Capabilities" }
-    ]
-  },
-  {
-    tactic: "Initial Access",
-    techniques: [
-      { name: "AI Supply Chain Compromise" },
-      { name: "Valid Accounts" },
-      { name: "Exploit Public-Facing Application" },
-      { name: "Phishing" },
-      { name: "Drive-by Compromise" },
-      { name: "AI Model Inference API Access" }
-    ]
-  },
-  {
-    tactic: "AI Model Access Execution",
-    techniques: [
-      { name: "AI-Enabled Product or Service" },
-      { name: "Physical Environment Access" },
-      { name: "Full AI Model Access" },
-      { name: "User Execution" }
-    ]
-  },
-  {
-    tactic: "Persistence",
-    techniques: [
-      { name: "Command and Scripting Interpreter" },
-      { name: "LLM Prompt Injection" },
-      { name: "LLM Plugin Compromise" },
-      { name: "Poison Training Data" }
-    ]
-  },
-  {
-    tactic: "Privilege Escalation",
-    techniques: [
-      { name: "Manipulate AI Model" },
-      { name: "LLM Prompt Self-Replication" }
-    ]
-  },
-  {
-    tactic: "Defense Evasion",
-    techniques: [
-      { name: "RAG Poisoning" },
-      { name: "LLM Plugin Compromise" },
-      { name: "LLM Jailbreak" },
-      { name: "Evade AI Model" },
-      { name: "LLM Prompt Obfuscation" },
-      { name: "False RAG Entry Injection" },
-      { name: "Impersonation" },
-      { name: "Masquerading" }
-    ]
-  },
-  {
-    tactic: "Credential Access",
-    techniques: [{ name: "Unsecured Credentials" }]
-  },
-  {
-    tactic: "Discovery",
-    techniques: [
-      { name: "Discover AI Model Ontology" },
-      { name: "Discover AI Model Family" },
-      { name: "Discover AI Artifacts" },
-      { name: "Discover LLM Hallucinations" },
-      { name: "Discover AI Model Outputs" },
-      { name: "Discover LLM System Information" },
-      { name: "Cloud Service Discovery" }
-    ]
-  },
-  {
-    tactic: "Collection",
-    techniques: [
-      { name: "AI Artifact Collection" },
-      { name: "Data from Information Repositories" },
-      { name: "Data from Local System" }
-    ]
-  },
-  {
-    tactic: "AI Attack Staging",
-    techniques: [
-      { name: "Create Proxy AI Model" },
-      { name: "Manipulate AI Model" },
-      { name: "Verify Attack" },
-      { name: "Craft Adversarial Data" }
-    ]
-  },
-  {
-    tactic: "Command and Control",
-    techniques: [{ name: "Reverse Shell" }]
-  },
-  {
-    tactic: "Exfiltration",
-    techniques: [
-      { name: "Exfiltration via AI Inference API" },
-      { name: "Exfiltration via Cyber Means" },
-      { name: "Extract LLM System Prompt" },
-      { name: "LLM Data Leakage" },
-      { name: "LLM Response Rendering" }
-    ]
-  },
-  {
-    tactic: "Impact",
-    techniques: [
-      { name: "Evade AI Model" },
-      { name: "Denial of AI Service" },
-      { name: "Spamming AI System with Chaff Data" },
-      { name: "Erode AI Model Integrity" },
-      { name: "Cost Harvesting" },
-      { name: "External Harms" },
-      { name: "Erode Dataset Integrity" }
-    ]
-  }
+  { tactic: "Reconnaissance",
+    techniques: ["Search Open Technical Databases","Search Open AI Vulnerability Analysis","Search Victim-Owned Websites","Search Application Repositories","Active Scanning","Gather RAG-Indexed Targets"] },
+  { tactic: "Resource Development",
+    techniques: ["Acquire Public AI Artifacts","Obtain Capabilities","Develop Capabilities","Acquire Infrastructure","Publish Poisoned Datasets","Poison Training Data","Establish Accounts","Publish Poisoned Models","Publish Hallucinated Entities","LLM Prompt Crafting","Retrieval Content Crafting","Stage Capabilities"] },
+  { tactic: "Initial Access",
+    techniques: ["AI Supply Chain Compromise","Valid Accounts","Exploit Public-Facing Application","Phishing","Drive-by Compromise","AI Model Inference API Access"] },
+  { tactic: "AI Model Access Execution",
+    techniques: ["AI-Enabled Product or Service","Physical Environment Access","Full AI Model Access","User Execution"] },
+  { tactic: "Persistence",
+    techniques: ["Command and Scripting Interpreter","LLM Prompt Injection","LLM Plugin Compromise","Poison Training Data"] },
+  { tactic: "Privilege Escalation",
+    techniques: ["Manipulate AI Model","LLM Prompt Self-Replication"] },
+  { tactic: "Defense Evasion",
+    techniques: ["RAG Poisoning","LLM Plugin Compromise","LLM Jailbreak","Evade AI Model","LLM Prompt Obfuscation","False RAG Entry Injection","Impersonation","Masquerading"] },
+  { tactic: "Credential Access", techniques: ["Unsecured Credentials"] },
+  { tactic: "Discovery",
+    techniques: ["Discover AI Model Ontology","Discover AI Model Family","Discover AI Artifacts","Discover LLM Hallucinations","Discover AI Model Outputs","Discover LLM System Information","Cloud Service Discovery"] },
+  { tactic: "Collection",
+    techniques: ["AI Artifact Collection","Data from Information Repositories","Data from Local System"] },
+  { tactic: "AI Attack Staging",
+    techniques: ["Create Proxy AI Model","Manipulate AI Model","Verify Attack","Craft Adversarial Data"] },
+  { tactic: "Command and Control", techniques: ["Reverse Shell"] },
+  { tactic: "Exfiltration",
+    techniques: ["Exfiltration via AI Inference API","Exfiltration via Cyber Means","Extract LLM System Prompt","LLM Data Leakage","LLM Response Rendering"] },
+  { tactic: "Impact",
+    techniques: ["Evade AI Model","Denial of AI Service","Spamming AI System with Chaff Data","Erode AI Model Integrity","Cost Harvesting","External Harms","Erode Dataset Integrity"] }
 ];
 
-/* ---------- MAIN COMPONENT ---------- */
+/* ---------------- 2. MAIN COMPONENT ---------------- */
 export default function AIMitreMatrix() {
-  const [atlasMatrix, setAtlasMatrix] = useState(demoMatrix); // fallback
-  const [reports, setReports]     = useState([]);
-  const [pending, setPending]     = useState([]);
-  const [selected, setSelected]   = useState(null);
+  const [matrix,  setMatrix]  = useState(demoMatrix); // will try live fetch
+  const [pending, setPending] = useState([]);
+  const [reports, setReports] = useState([]);         // mapped
+  const [focus,   setFocus]   = useState(null);       // {tactic,tech, reports}
 
-  /* Try live MITRE ATLAS fetch */
-  useEffect(() => {
+  /* Attempt live MITRE fetch (silent failure retains demo) */
+  useEffect(()=> {
     fetch("https://atlas.mitre.org/api/matrix")
-      .then(r => r.json())
-      .then(d => Array.isArray(d) && d.length && setAtlasMatrix(d))
-      .catch(() => {}); // silent fail, keep demo
-  }, []);
+      .then(r=>r.json())
+      .then(d => Array.isArray(d)&&d.length && setMatrix(
+        d.map(t => ({ tactic: t.tactic, techniques: t.techniques.map(tc=>tc.name) }))
+      ))
+      .catch(()=>{});
+  },[]);
 
-  /* -------- Upload ---------- */
-  const handleUpload = e => {
-    const f = e.target.files[0];
-    if (!f) return;
-    const rdr = new FileReader();
-    rdr.onload = e2 => {
-      try {
-        const json = JSON.parse(e2.target.result);
-        setPending(Array.isArray(json) ? json : [json]);
-        alert("Reports loaded – click “Map to MITRE AI”.");
-      } catch { alert("Invalid JSON"); }
+  /* --------- Upload JSON --------- */
+  const handleUpload = e=>{
+    const f=e.target.files[0];
+    if(!f) return;
+    const rdr=new FileReader();
+    rdr.onload=ev=>{
+      try{
+        const j=JSON.parse(ev.target.result);
+        setPending(Array.isArray(j)?j:[j]);
+        alert("Loaded reports – click Map to MITRE AI.");
+      }catch{alert("Invalid JSON");}
     };
     rdr.readAsText(f);
   };
 
-  /* -------- Map ---------- */
-  const mapPending = () => {
-    if (!pending.length) return;
-    const mapped = pending.map(rep => {
-      if (rep.tactic && rep.technique) return rep; // already mapped
-
-      for (const tac of atlasMatrix) {
-        for (const tech of tac.techniques) {
-          const nm   = tech.name.toLowerCase();
-          const blob = `${rep.title||""} ${rep.description||""}`.toLowerCase();
-
-          if (rep.technique_id &&
-              tech.external_references?.some(r=>r.external_id===rep.technique_id))
-            return { ...rep, tactic: tac.tactic, technique: tech.name };
-
-          if (rep.technique && rep.technique.toLowerCase() === nm)
-            return { ...rep, tactic: tac.tactic, technique: tech.name };
-
-          if (blob.includes(nm))
-            return { ...rep, tactic: tac.tactic, technique: tech.name };
+  /* --------- Map pending --------- */
+  const mapPending = ()=>{
+    if(!pending.length) return;
+    const mapped = pending.map(rep=>{
+      // simple phrase match across matrix technique names
+      const blob=`${rep.title||""} ${rep.description||""}`.toLowerCase();
+      for(const t of matrix){
+        for(const tech of t.techniques){
+          if(blob.includes(tech.toLowerCase())){
+            return {...rep,tactic:t.tactic,technique:tech};
+          }
         }
       }
-      // fallback -> first cell
-      return { ...rep,
-        tactic: atlasMatrix[0].tactic,
-        technique: atlasMatrix[0].techniques[0].name
-      };
+      // fallback into first cell
+      return {...rep,tactic:matrix[0].tactic,technique:matrix[0].techniques[0]};
     });
-    setReports(r => [...r, ...mapped]);
+    setReports(r=>[...r, ...mapped]);
     setPending([]);
   };
 
-  /* -------- UI helpers ---------- */
-  const openCell = (tac, tech) =>
-    setSelected({ tactic: tac, technique: tech,
-      reports: reports.filter(r=>r.tactic===tac && r.technique===tech) });
+  /* --------- Inline styles --------- */
+  const cellStyle = (tac,tech)=>({
+    cursor:"pointer",
+    padding:"4px 6px",
+    margin:"2px 0",
+    border:"1px solid #ccc",
+    borderRadius:3,
+    background: reports.some(r=>r.tactic===tac&&r.technique===tech)? "#c6f6d5":"#eff6ff", // green if mapped
+    color:"#1a202c",
+    fontSize:13,
+    textAlign:"left"
+  });
 
-  /* -------- Render ---------- */
+  const columnStyle = {
+    minWidth:230,
+    maxHeight:320,
+    overflowY:"auto",
+    border:"1px solid #cbd5e0",
+    borderRadius:4,
+    padding:4,
+    background:"#ffffff"
+  };
+
+  /* --------- Render --------- */
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">AI MITRE Matrix (Demo)</h1>
+    <div style={{fontFamily:"Arial,Helvetica",padding:20}}>
+      <h1 style={{fontSize:32,marginBottom:4}}>AI MITRE Matrix (Demo)</h1>
 
-      <div className="flex items-center space-x-4">
+      {/* upload + map */}
+      <div style={{margin:"12px 0"}}>
         <input type="file" accept="application/json" onChange={handleUpload}/>
-        <button
-          disabled={!pending.length}
+        <button disabled={!pending.length}
           onClick={mapPending}
-          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50">
+          style={{marginLeft:8,padding:"6px 12px",background:"#2563eb",color:"#fff",
+                  border:"none",borderRadius:4,opacity:pending.length?1:.5}}>
           Map to MITRE AI
         </button>
-        {!!pending.length && <span>{pending.length} pending</span>}
+        {pending.length>0 && <span style={{marginLeft:8,fontSize:13}}>{pending.length} pending</span>}
       </div>
 
-      {/* Matrix grid */}
-      <div className="grid grid-cols-4 gap-4">
-        {atlasMatrix.map(tac=>(
-          <div key={tac.tactic} className="border rounded p-4">
-            <h2 className="font-semibold mb-2">{tac.tactic}</h2>
-            {tac.techniques.map(tech=>(
-              <button key={tech.name}
-                className="block text-left text-blue-600 hover:underline"
-                onClick={()=>openCell(tac.tactic, tech.name)}>
-                {tech.name}
-              </button>
+      {/* grid */}
+      <div style={{display:"flex",gap:12,overflowX:"auto"}}>
+        {matrix.map(col=>(
+          <div key={col.tactic} style={columnStyle}>
+            <div style={{fontWeight:"bold",marginBottom:4}}>{col.tactic}</div>
+            {col.techniques.map(tech=>(
+              <div key={tech}
+                   style={cellStyle(col.tactic,tech)}
+                   onClick={()=>setFocus({
+                     tactic:col.tactic,
+                     technique:tech,
+                     reports:reports.filter(r=>r.tactic===col.tactic && r.technique===tech)
+                   })}>
+                {tech}
+              </div>
             ))}
           </div>
         ))}
       </div>
 
-      {/* Details panel */}
-      {selected && (
-        <div className="border-t pt-4">
-          <h3 className="text-xl font-semibold mb-2">
-            {selected.tactic} → {selected.technique}
+      {/* details panel */}
+      {focus && (
+        <div style={{marginTop:24,borderTop:"1px solid #cbd5e0",paddingTop:12}}>
+          <h3 style={{fontSize:20,fontWeight:"bold"}}>
+            {focus.tactic} ➜ {focus.technique}
           </h3>
-          {selected.reports.length ? (
-            <ul className="space-y-2">
-              {selected.reports.map((r,i)=>(
-                <li key={i} className="border p-3 rounded">
-                  <p className="font-bold">{r.title}</p>
-                  <p className="text-sm text-gray-600">{r.description}</p>
-                  <p className="text-xs text-gray-500">Impact: {r.impact}</p>
+          {focus.reports.length?
+            <ul>
+              {focus.reports.map((r,i)=>(
+                <li key={i} style={{margin:"8px 0",padding:8,border:"1px solid #e2e8f0",borderRadius:4}}>
+                  <strong>{r.title}</strong><br/>
+                  <span style={{fontSize:13}}>{r.description}</span><br/>
+                  <em style={{fontSize:12,color:"#4a5568"}}>Impact: {r.impact}</em>
                 </li>
               ))}
             </ul>
-          ) : <p>No reports mapped.</p>}
+          : <p style={{fontStyle:"italic"}}>No mapped reports.</p>}
         </div>
       )}
     </div>
