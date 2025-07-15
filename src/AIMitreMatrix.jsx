@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-// ---------- DEMO MATRIX ----------
+/* ---------- DEMO MATRIX (always renders) ---------- */
 const demoMatrix = [
   {
     tactic: "Reconnaissance",
@@ -140,121 +140,98 @@ const demoMatrix = [
   }
 ];
 
+/* ---------- MAIN COMPONENT ---------- */
 export default function AIMitreMatrix() {
-  const [atlasMatrix, setAtlasMatrix] = useState(demoMatrix); // start with demo
-  const [reports, setReports] = useState([]);
-  const [pending, setPending] = useState([]);
-  const [selectedCell, setSelectedCell] = useState(null);
+  const [atlasMatrix, setAtlasMatrix] = useState(demoMatrix); // fallback
+  const [reports, setReports]     = useState([]);
+  const [pending, setPending]     = useState([]);
+  const [selected, setSelected]   = useState(null);
 
-  // Attempt live fetch (silent fail keeps demoMatrix)
+  /* Try live MITRE ATLAS fetch */
   useEffect(() => {
     fetch("https://atlas.mitre.org/api/matrix")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length) setAtlasMatrix(data);
-      })
-      .catch(() => {});
+      .then(r => r.json())
+      .then(d => Array.isArray(d) && d.length && setAtlasMatrix(d))
+      .catch(() => {}); // silent fail, keep demo
   }, []);
 
-  // ---- Upload JSON ----
-  const handleUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
+  /* -------- Upload ---------- */
+  const handleUpload = e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const rdr = new FileReader();
+    rdr.onload = e2 => {
       try {
-        const parsed = JSON.parse(ev.target.result);
-        setPending(Array.isArray(parsed) ? parsed : [parsed]);
-        alert("Report(s) loaded. Click “Map to MITRE AI”.");
-      } catch {
-        alert("Invalid JSON");
-      }
+        const json = JSON.parse(e2.target.result);
+        setPending(Array.isArray(json) ? json : [json]);
+        alert("Reports loaded – click “Map to MITRE AI”.");
+      } catch { alert("Invalid JSON"); }
     };
-    reader.readAsText(file);
+    rdr.readAsText(f);
   };
 
-  // ---- Map pending ----
+  /* -------- Map ---------- */
   const mapPending = () => {
     if (!pending.length) return;
-
-    const resolved = pending.map((rep) => {
-      // Already mapped
-      if (rep.tactic && rep.technique) return rep;
+    const mapped = pending.map(rep => {
+      if (rep.tactic && rep.technique) return rep; // already mapped
 
       for (const tac of atlasMatrix) {
         for (const tech of tac.techniques) {
-          const name = tech.name.toLowerCase();
+          const nm   = tech.name.toLowerCase();
+          const blob = `${rep.title||""} ${rep.description||""}`.toLowerCase();
 
-          // Technique ID exact
-          if (
-            rep.technique_id &&
-            tech.external_references?.some(
-              (r) => r.external_id === rep.technique_id
-            )
-          )
+          if (rep.technique_id &&
+              tech.external_references?.some(r=>r.external_id===rep.technique_id))
             return { ...rep, tactic: tac.tactic, technique: tech.name };
 
-          // Technique name exact
-          if (rep.technique && rep.technique.toLowerCase() === name)
+          if (rep.technique && rep.technique.toLowerCase() === nm)
             return { ...rep, tactic: tac.tactic, technique: tech.name };
 
-          // Phrase match in title/description
-          const blob = `${rep.title || ""} ${rep.description || ""}`.toLowerCase();
-          if (blob.includes(name))
+          if (blob.includes(nm))
             return { ...rep, tactic: tac.tactic, technique: tech.name };
         }
       }
-      // Fallback to first cell
-      return {
-        ...rep,
+      // fallback -> first cell
+      return { ...rep,
         tactic: atlasMatrix[0].tactic,
         technique: atlasMatrix[0].techniques[0].name
       };
     });
-
-    setReports((r) => [...r, ...resolved]);
+    setReports(r => [...r, ...mapped]);
     setPending([]);
   };
 
-  // ---- Open details ----
-  const openReports = (tactic, tech) => {
-    setSelectedCell({
-      tactic,
-      technique: tech,
-      reports: reports.filter(
-        (r) => r.tactic === tactic && r.technique === tech
-      )
-    });
-  };
+  /* -------- UI helpers ---------- */
+  const openCell = (tac, tech) =>
+    setSelected({ tactic: tac, technique: tech,
+      reports: reports.filter(r=>r.tactic===tac && r.technique===tech) });
 
-  // ---- Render ----
+  /* -------- Render ---------- */
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-3xl font-bold">AI MITRE Matrix (Demo)</h1>
 
       <div className="flex items-center space-x-4">
-        <input type="file" accept="application/json" onChange={handleUpload} />
+        <input type="file" accept="application/json" onChange={handleUpload}/>
         <button
           disabled={!pending.length}
           onClick={mapPending}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
-        >
+          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50">
           Map to MITRE AI
         </button>
-        {pending.length > 0 && <span>{pending.length} pending</span>}
+        {!!pending.length && <span>{pending.length} pending</span>}
       </div>
 
       {/* Matrix grid */}
       <div className="grid grid-cols-4 gap-4">
-        {atlasMatrix.map((tac) => (
+        {atlasMatrix.map(tac=>(
           <div key={tac.tactic} className="border rounded p-4">
             <h2 className="font-semibold mb-2">{tac.tactic}</h2>
-            {tac.techniques.map((tech) => (
-              <button
-                key={tech.name}
+            {tac.techniques.map(tech=>(
+              <button key={tech.name}
                 className="block text-left text-blue-600 hover:underline"
-                onClick={() => openReports(tac.tactic, tech.name)}
-              >
+                onClick={()=>openCell(tac.tactic, tech.name)}>
                 {tech.name}
               </button>
             ))}
@@ -262,15 +239,15 @@ export default function AIMitreMatrix() {
         ))}
       </div>
 
-      {/* Report panel */}
-      {selectedCell && (
+      {/* Details panel */}
+      {selected && (
         <div className="border-t pt-4">
           <h3 className="text-xl font-semibold mb-2">
-            {selectedCell.tactic} → {selectedCell.technique}
+            {selected.tactic} → {selected.technique}
           </h3>
-          {selectedCell.reports.length ? (
+          {selected.reports.length ? (
             <ul className="space-y-2">
-              {selectedCell.reports.map((r, i) => (
+              {selected.reports.map((r,i)=>(
                 <li key={i} className="border p-3 rounded">
                   <p className="font-bold">{r.title}</p>
                   <p className="text-sm text-gray-600">{r.description}</p>
@@ -278,9 +255,7 @@ export default function AIMitreMatrix() {
                 </li>
               ))}
             </ul>
-          ) : (
-            <p>No reports mapped.</p>
-          )}
+          ) : <p>No reports mapped.</p>}
         </div>
       )}
     </div>
